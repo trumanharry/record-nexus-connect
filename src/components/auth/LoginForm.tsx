@@ -25,6 +25,10 @@ const LoginForm = () => {
       const result = await signIn(email, password);
       console.log("Login result:", result);
       
+      if (!result || !result.session) {
+        throw new Error("Login failed - no session returned");
+      }
+      
       toast({
         title: "Login Successful",
         description: "Welcome back!",

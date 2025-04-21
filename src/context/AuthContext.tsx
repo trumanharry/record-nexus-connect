@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<any>; // Updated return type
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
 }
