@@ -1,9 +1,16 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { UserRole } from "@/types";
-import { BarChart3, Building, User, LineChart, FileText } from "lucide-react";
+import {
+  BarChart3,
+  Building,
+  User,
+  LineChart,
+  FileText,
+  Settings,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
