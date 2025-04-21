@@ -1,97 +1,73 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { User, UserRole } from "../types";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
-// Create auth context
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
-
-// Sample user data - in a real app this would come from API/backend
-const sampleUsers: User[] = [
-  {
-    id: "1",
-    email: "admin@example.com",
-    name: "Admin User",
-    role: UserRole.ADMINISTRATOR,
-    points: 500,
-    following: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdBy: "system",
-    lastModifiedBy: "system",
-  },
-  {
-    id: "2",
-    email: "distributor@example.com",
-    name: "Distributor User",
-    role: UserRole.DISTRIBUTOR,
-    points: 350,
-    following: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdBy: "system",
-    lastModifiedBy: "system",
-  },
-  {
-    id: "3",
-    email: "corporate@example.com",
-    name: "Corporate User",
-    role: UserRole.CORPORATE,
-    points: 200,
-    following: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdBy: "system",
-    lastModifiedBy: "system",
-  },
-];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for saved auth token on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            name: profile.name || session.user.email!,
+            role: profile.role as UserRole,
+            points: profile.points,
+            following: profile.following || [],
+            createdAt: new Date(profile.created_at),
+            updatedAt: new Date(profile.updated_at),
+            createdBy: profile.created_by,
+            lastModifiedBy: profile.last_modified_by,
+          });
         }
-      } catch (error) {
-        console.error("Auth check failed", error);
-      } finally {
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
         setIsLoading(false);
       }
-    };
+    });
 
-    checkAuth();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      // Simulating auth flow with sample users
-      const foundUser = sampleUsers.find((u) => u.email === email);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      if (!foundUser) {
-        throw new Error("Invalid credentials");
-      }
-      
-      // In a real app, you'd verify the password here
-      // For this demo, any password works
-      
-      // Save user to local storage
-      localStorage.setItem("user", JSON.stringify(foundUser));
-      setUser(foundUser);
+      if (error) throw error;
     } catch (error) {
       console.error("Sign in failed", error);
       throw error;
@@ -100,9 +76,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signOut = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Sign out failed", error);
+      throw error;
+    }
   };
 
   return (
