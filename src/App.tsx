@@ -14,6 +14,11 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
 import { UserRole } from "./types";
+import CompanyDetail from "./pages/CompanyDetail";
+import HospitalDetail from "./pages/HospitalDetail";
+import ContactDetail from "./pages/ContactDetail";
+import PhysicianDetail from "./pages/PhysicianDetail";
+import PointsPage from "./pages/PointsPage";
 
 const queryClient = new QueryClient();
 
@@ -33,12 +38,22 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route element={<MainLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                
+                {/* Entity list pages */}
                 <Route path="/companies" element={<Dashboard />} />
                 <Route path="/hospitals" element={<Dashboard />} />
                 <Route path="/contacts" element={<Dashboard />} />
                 <Route path="/physicians" element={<Dashboard />} />
-                <Route path="/points" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
+                
+                {/* Entity detail pages */}
+                <Route path="/companies/:id" element={<CompanyDetail />} />
+                <Route path="/hospitals/:id" element={<HospitalDetail />} />
+                <Route path="/contacts/:id" element={<ContactDetail />} />
+                <Route path="/physicians/:id" element={<PhysicianDetail />} />
+                
+                {/* Points/rewards page */}
+                <Route path="/points" element={<PointsPage />} />
               </Route>
             </Route>
             
