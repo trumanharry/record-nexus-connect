@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { UserRole } from "@/types";
@@ -13,8 +13,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   const { user, isLoading, isAuthenticated } = useAuth();
   const location = useLocation();
 
-  // Show loading state
+  useEffect(() => {
+    // Log component state for debugging
+    console.log("ProtectedRoute state:", { 
+      isAuthenticated, 
+      isLoading, 
+      user: user ? `${user.email} (${user.role})` : 'null',
+      path: location.pathname,
+      allowedRoles: allowedRoles ? allowedRoles.join(", ") : "none"
+    });
+  }, [isAuthenticated, isLoading, user, location.pathname, allowedRoles]);
+
+  // Show loading state - crucial for direct URL access
   if (isLoading) {
+    console.log("ProtectedRoute: Still loading, showing spinner");
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
@@ -24,12 +36,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 
   // Handle not authenticated
   if (!isAuthenticated) {
-    console.log("User not authenticated, redirecting to login");
+    console.log("ProtectedRoute: User not authenticated, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Skip role check if no roles specified
   if (!allowedRoles || allowedRoles.length === 0) {
+    console.log("ProtectedRoute: No role restrictions, allowing access");
     return <Outlet />;
   }
 
@@ -40,7 +53,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
       String(role).toLowerCase() === userRoleString
     );
     
-    console.log(`User role: ${user.role}, Allowed roles: ${allowedRoles.join(", ")}, Has access: ${hasAccess}`);
+    console.log(`ProtectedRoute: Role check - User role: ${user.role}, Allowed roles: ${allowedRoles.join(", ")}, Has access: ${hasAccess}`);
     
     if (!hasAccess) {
       toast({
@@ -52,11 +65,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
       return <Navigate to="/unauthorized" replace />;
     }
   } else {
-    console.error("User role is undefined");
+    console.error("ProtectedRoute: User role is undefined");
     return <Navigate to="/login" replace />;
   }
 
   // If all checks pass, render the child routes
+  console.log("ProtectedRoute: All checks passed, rendering child routes");
   return <Outlet />;
 };
 

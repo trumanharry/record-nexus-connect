@@ -22,35 +22,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log("Setting up auth state listener");
     
-    // Listen for auth changes first before checking session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state change detected:", event);
-        
-        if (session?.user) {
-          console.log("Session user found:", session.user.email);
-          
-          // Use setTimeout to prevent potential deadlocks with Supabase auth
-          setTimeout(() => {
-            fetchUserProfile(session.user.id);
-          }, 0);
-        } else {
-          console.log("No session user, setting user to null");
-          setUser(null);
-          setIsLoading(false);
-        }
-      }
-    );
-    
-    // Get initial session
+    // Get initial session first to prevent flickering
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("Initial session check:", session ? "Session found" : "No session");
         
         if (session?.user) {
-          await fetchUserProfile(session.user.id);
+          console.log("Session user found on initial check:", session.user.email);
+          // Use setTimeout to prevent potential deadlocks with Supabase auth
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
         } else {
+          console.log("No session user on initial check, setting user to null");
+          setUser(null);
           setIsLoading(false);
         }
       } catch (error) {
@@ -60,6 +46,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     
     initializeAuth();
+    
+    // Then set up the auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state change detected:", event);
+        
+        if (session?.user) {
+          console.log("Session user found in auth change:", session.user.email);
+          
+          // Use setTimeout to prevent potential deadlocks with Supabase auth
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          console.log("No session user in auth change, setting user to null");
+          setUser(null);
+          setIsLoading(false);
+        }
+      }
+    );
 
     return () => {
       console.log("Cleaning up auth state listener");

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -7,13 +7,32 @@ import { useAuth } from "@/context/AuthContext";
 const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
+  const [redirecting, setRedirecting] = useState(false);
 
-  // Redirect to dashboard if already authenticated
-  React.useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      navigate("/dashboard");
+  // Improved handler for redirection
+  useEffect(() => {
+    // Only redirect after auth state is confirmed and not already redirecting
+    if (!isLoading && isAuthenticated && !redirecting) {
+      console.log("Index: User is authenticated, redirecting to dashboard");
+      setRedirecting(true);
+      
+      // Small delay to ensure stable redirect
+      const redirectTimer = setTimeout(() => {
+        navigate("/dashboard");
+      }, 50);
+      
+      return () => clearTimeout(redirectTimer);
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, redirecting]);
+
+  // Show loading while authentication state is being determined
+  if (isLoading || redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">

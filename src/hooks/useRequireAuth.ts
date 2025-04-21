@@ -15,17 +15,30 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoading) return;
+    // Skip checks while loading to avoid premature redirects
+    if (isLoading) {
+      console.log("useRequireAuth: Still loading auth state, waiting...");
+      return;
+    }
+
+    console.log("useRequireAuth check:", { 
+      isAuthenticated, 
+      user: user ? `${user.email} (${user.role})` : 'null',
+      allowedRoles: allowedRoles ? allowedRoles.join(", ") : "none"
+    });
 
     // Handle authentication
     if (!isAuthenticated) {
-      console.log("User not authenticated, redirecting to:", redirectTo);
+      console.log("useRequireAuth: User not authenticated, redirecting to:", redirectTo);
       navigate(redirectTo, { replace: true });
       return;
     }
 
     // Skip role check if no roles specified
-    if (!allowedRoles || allowedRoles.length === 0) return;
+    if (!allowedRoles || allowedRoles.length === 0) {
+      console.log("useRequireAuth: No role restrictions, allowing access");
+      return;
+    }
 
     // Handle role-based access
     if (user && user.role) {
@@ -34,12 +47,14 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}) => {
         String(role).toLowerCase() === userRoleString
       );
 
+      console.log(`useRequireAuth: Role check - User role: ${user.role}, Allowed roles: ${allowedRoles.join(", ")}, Has access: ${hasAccess}`);
+
       if (!hasAccess) {
-        console.log(`Access denied: user role ${user.role} not in allowed roles: ${allowedRoles.join(', ')}`);
+        console.log(`useRequireAuth: Access denied for role ${user.role}`);
         navigate("/unauthorized", { replace: true });
       }
     } else {
-      console.error("User role is undefined");
+      console.error("useRequireAuth: User role is undefined");
       navigate("/login", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, redirectTo, allowedRoles, user]);
