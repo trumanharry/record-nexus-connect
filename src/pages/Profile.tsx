@@ -14,13 +14,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import RoleDisplay from "@/components/auth/RoleDisplay";
-import { supabase } from "@/integrations/supabase/client";
-import { User } from "@/types";
+import { UserRole } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Profile: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, updateUserProfile } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
   const [name, setName] = useState(user?.name || "");
+  const [role, setRole] = useState<UserRole>(user?.role || UserRole.CORPORATE);
 
   if (isLoading || !user) {
     return (
@@ -35,18 +36,15 @@ const Profile: React.FC = () => {
     setIsUpdating(true);
     
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ name })
-        .eq("id", user.id);
-      
-      if (error) throw error;
+      await updateUserProfile({ 
+        name, 
+        role 
+      });
       
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
-      
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
@@ -109,24 +107,28 @@ const Profile: React.FC = () => {
               
               <div className="space-y-2">
                 <Label>Role</Label>
-                <div>
-                  <RoleDisplay role={user.role} size="lg" />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Your role determines what features you can access in the system
-                  </p>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Points</Label>
-                <div className="font-semibold text-lg">{user.points || 0} points</div>
+                <Select 
+                  value={role} 
+                  onValueChange={(value) => setRole(value as UserRole)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(UserRole).map((roleOption) => (
+                      <SelectItem key={roleOption} value={roleOption}>
+                        {roleOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-sm text-muted-foreground">
-                  Earn points by contributing to the system
+                  Your role determines what features you can access in the system
                 </p>
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" disabled={isUpdating || name === user.name}>
+              <Button type="submit" disabled={isUpdating}>
                 {isUpdating ? "Saving..." : "Save Changes"}
               </Button>
             </CardFooter>
