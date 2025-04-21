@@ -21,7 +21,22 @@ const HospitalDetail: React.FC = () => {
   // Check if the user is following this record
   const isFollowing = user?.following?.includes(id || "") || false;
 
-  // Fetch hospital data
+  // For now, we'll use mock data since we haven't created the hospitals table yet
+  const mockHospital: Hospital = {
+    id: id || "mock-id",
+    name: "City General Hospital",
+    type: "General",
+    beds: 500,
+    address: "123 Medical Center Blvd, Anytown, USA",
+    website: "https://citygeneralhospital.example.com",
+    description: "A leading healthcare facility serving the community since 1950.",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: "system",
+    lastModifiedBy: "system"
+  };
+
+  // Fetch hospital data (using mock data for now)
   const { 
     data: hospital, 
     isLoading,
@@ -29,23 +44,8 @@ const HospitalDetail: React.FC = () => {
   } = useQuery({
     queryKey: ["hospital", id],
     queryFn: async () => {
-      if (!id) throw new Error("Hospital ID is required");
-      
-      const { data, error } = await supabase
-        .from("hospitals")
-        .select("*")
-        .eq("id", id)
-        .single();
-        
-      if (error) throw error;
-      if (!data) throw new Error("Hospital not found");
-      
-      // Convert string dates to Date objects
-      return {
-        ...data,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at),
-      } as Hospital;
+      // Return the mock hospital for now
+      return mockHospital;
     },
     enabled: !!id
   });

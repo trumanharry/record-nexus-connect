@@ -18,7 +18,22 @@ const ContactDetail: React.FC = () => {
   // Check if the user is following this record
   const isFollowing = user?.following?.includes(id || "") || false;
 
-  // Fetch contact data
+  // For now, we'll use mock data since we haven't created the contacts table yet
+  const mockContact: Contact = {
+    id: id || "mock-id",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
+    phone: "555-123-4567",
+    title: "Sales Manager",
+    company: "Mock Company",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: "system",
+    lastModifiedBy: "system"
+  };
+
+  // Fetch contact data (using mock data for now)
   const { 
     data: contact, 
     isLoading,
@@ -26,23 +41,8 @@ const ContactDetail: React.FC = () => {
   } = useQuery({
     queryKey: ["contact", id],
     queryFn: async () => {
-      if (!id) throw new Error("Contact ID is required");
-      
-      const { data, error } = await supabase
-        .from("contacts")
-        .select("*")
-        .eq("id", id)
-        .single();
-        
-      if (error) throw error;
-      if (!data) throw new Error("Contact not found");
-      
-      // Convert string dates to Date objects
-      return {
-        ...data,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at),
-      } as Contact;
+      // Return the mock contact for now
+      return mockContact;
     },
     enabled: !!id
   });

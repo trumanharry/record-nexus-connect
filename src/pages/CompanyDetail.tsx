@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +21,20 @@ const CompanyDetail: React.FC = () => {
   // Check if the user is following this record
   const isFollowing = user?.following?.includes(id || "") || false;
 
-  // Fetch company data
+  // For now, we'll use mock data since we haven't created the companies table yet
+  const mockCompany: Company = {
+    id: id || "mock-id",
+    name: "Mock Company",
+    industry: "Technology",
+    website: "https://example.com",
+    description: "This is a mock company for development purposes.",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: "system",
+    lastModifiedBy: "system"
+  };
+
+  // Fetch company data (using mock data for now)
   const { 
     data: company, 
     isLoading,
@@ -28,23 +42,8 @@ const CompanyDetail: React.FC = () => {
   } = useQuery({
     queryKey: ["company", id],
     queryFn: async () => {
-      if (!id) throw new Error("Company ID is required");
-      
-      const { data, error } = await supabase
-        .from("companies")
-        .select("*")
-        .eq("id", id)
-        .single();
-        
-      if (error) throw error;
-      if (!data) throw new Error("Company not found");
-      
-      // Convert string dates to Date objects
-      return {
-        ...data,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at),
-      } as Company;
+      // Return the mock company for now
+      return mockCompany;
     },
     enabled: !!id
   });

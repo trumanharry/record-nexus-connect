@@ -18,7 +18,22 @@ const PhysicianDetail: React.FC = () => {
   // Check if the user is following this record
   const isFollowing = user?.following?.includes(id || "") || false;
 
-  // Fetch physician data
+  // For now, we'll use mock data since we haven't created the physicians table yet
+  const mockPhysician: Physician = {
+    id: id || "mock-id",
+    firstName: "Jane",
+    lastName: "Smith",
+    specialty: "Cardiology",
+    hospitalAffiliation: "City General Hospital",
+    email: "dr.smith@example.com",
+    phone: "555-987-6543",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdBy: "system",
+    lastModifiedBy: "system"
+  };
+
+  // Fetch physician data (using mock data for now)
   const { 
     data: physician, 
     isLoading,
@@ -26,23 +41,8 @@ const PhysicianDetail: React.FC = () => {
   } = useQuery({
     queryKey: ["physician", id],
     queryFn: async () => {
-      if (!id) throw new Error("Physician ID is required");
-      
-      const { data, error } = await supabase
-        .from("physicians")
-        .select("*")
-        .eq("id", id)
-        .single();
-        
-      if (error) throw error;
-      if (!data) throw new Error("Physician not found");
-      
-      // Convert string dates to Date objects
-      return {
-        ...data,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at),
-      } as Physician;
+      // Return the mock physician for now
+      return mockPhysician;
     },
     enabled: !!id
   });
