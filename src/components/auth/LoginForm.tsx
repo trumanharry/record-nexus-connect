@@ -21,13 +21,18 @@ const LoginForm = () => {
     setIsLoading(true);
     
     try {
+      console.log("Attempting login with:", email); // Log for debugging
       await signIn(email, password);
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Login failed", error);
       toast({
         title: "Login Failed",
-        description: "Invalid credentials. Please check your email and password.",
+        description: error.message || "Invalid credentials. Please check your email and password.",
         variant: "destructive",
       });
     } finally {
