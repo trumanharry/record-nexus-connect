@@ -47,6 +47,16 @@ const Login = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Password validation
+    if (signupPassword.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (signupPassword !== confirmPassword) {
       toast({
         title: "Passwords Don't Match",
