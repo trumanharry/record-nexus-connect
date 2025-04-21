@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { UserRole } from "@/types";
@@ -20,6 +20,7 @@ interface SidebarItemProps {
   label: string;
   to: string;
   active: boolean;
+  onClick?: () => void;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -27,10 +28,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   label,
   to,
   active,
+  onClick,
 }) => {
   console.log(`Rendering sidebar item: ${label}, active: ${active}, path: ${to}`);
   return (
-    <Link to={to}>
+    <Link to={to} onClick={onClick}>
       <Button
         variant="ghost"
         className={cn(
@@ -47,6 +49,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   
   console.log("Current user in sidebar:", user);
@@ -54,6 +57,12 @@ const Sidebar: React.FC = () => {
   
   const isAdmin = user?.role === UserRole.ADMINISTRATOR;
   console.log("Is user admin?", isAdmin, "Role:", user?.role, "AdminRole:", UserRole.ADMINISTRATOR);
+
+  // Navigation handler
+  const handleNavigation = (path: string) => {
+    console.log("Navigating to:", path);
+    navigate(path);
+  };
 
   // Navigation items
   const navItems = [
@@ -100,6 +109,7 @@ const Sidebar: React.FC = () => {
               label={item.label}
               to={item.to}
               active={location.pathname === item.to}
+              onClick={() => handleNavigation(item.to)}
             />
           ))}
         </div>

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import RoleDisplay from "@/components/auth/RoleDisplay";
 import { LogOut, UserRound, Settings } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 const UserMenu: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -27,6 +28,11 @@ const UserMenu: React.FC = () => {
       navigate("/login");
     } catch (error) {
       console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   
