@@ -19,6 +19,7 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}) => {
 
     // Handle authentication
     if (!isAuthenticated) {
+      console.log("User not authenticated, redirecting to:", redirectTo);
       navigate(redirectTo, { replace: true });
       return;
     }

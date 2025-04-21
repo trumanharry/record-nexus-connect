@@ -22,6 +22,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log("Setting up auth state listener");
     
+    // Listen for auth changes first before checking session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state change detected:", event);
+        
+        if (session?.user) {
+          console.log("Session user found:", session.user.email);
+          
+          // Use setTimeout to prevent potential deadlocks with Supabase auth
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          console.log("No session user, setting user to null");
+          setUser(null);
+          setIsLoading(false);
+        }
+      }
+    );
+    
     // Get initial session
     const initializeAuth = async () => {
       try {
@@ -40,22 +60,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     
     initializeAuth();
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state change detected:", event);
-        
-        if (session?.user) {
-          console.log("Session user found:", session.user.email);
-          await fetchUserProfile(session.user.id);
-        } else {
-          console.log("No session user, setting user to null");
-          setUser(null);
-          setIsLoading(false);
-        }
-      }
-    );
 
     return () => {
       console.log("Cleaning up auth state listener");
