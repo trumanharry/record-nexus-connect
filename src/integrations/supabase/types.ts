@@ -9,6 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          downvotes: string[] | null
+          id: string
+          last_modified_by: string
+          parent_id: string | null
+          record_id: string
+          record_type: string
+          score: number | null
+          updated_at: string
+          upvotes: string[] | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          downvotes?: string[] | null
+          id?: string
+          last_modified_by: string
+          parent_id?: string | null
+          record_id: string
+          record_type: string
+          score?: number | null
+          updated_at?: string
+          upvotes?: string[] | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          downvotes?: string[] | null
+          id?: string
+          last_modified_by?: string
+          parent_id?: string | null
+          record_id?: string
+          record_type?: string
+          score?: number | null
+          updated_at?: string
+          upvotes?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      point_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
