@@ -18,24 +18,31 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      console.log("Attempting login with:", email); // Log for debugging
-      const result = await signIn(email, password);
-      console.log("Login result:", result);
-      
-      if (!result || !result.session) {
-        throw new Error("Login failed - no session returned");
-      }
+      console.log("Attempting login with:", email);
+      await signIn(email, password);
       
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       });
+      
       navigate("/dashboard");
     } catch (error: any) {
-      console.error("Login failed", error);
+      console.error("Login error:", error);
+      
       toast({
         title: "Login Failed",
         description: error.message || "Invalid credentials. Please check your email and password.",

@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<any>; // Updated return type
+  signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -17,58 +17,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Set up auth state listener
   useEffect(() => {
     console.log("Setting up auth state listener");
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state change detected:", event);
-      if (session?.user) {
-        console.log("Session user found:", session.user.email);
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (error) {
-            console.error("Error fetching profile:", error);
-          }
-
-          if (profile) {
-            console.log("Profile found:", profile);
-            setUser({
-              id: session.user.id,
-              email: session.user.email!,
-              name: profile.name || session.user.email!,
-              role: profile.role as UserRole,
-              points: profile.points || 0,
-              following: profile.following || [],
-              createdAt: new Date(profile.created_at),
-              updatedAt: new Date(profile.updated_at),
-              createdBy: profile.created_by,
-              lastModifiedBy: profile.last_modified_by,
-            });
-          } else {
-            console.log("No profile found for user");
-          }
-        } catch (err) {
-          console.error("Error in auth state change handler:", err);
-        }
-      } else {
-        console.log("No session user, setting user to null");
-        setUser(null);
-      }
-      setIsLoading(false);
-    });
-
-    // Check current session
+    
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log("Initial session check:", session ? "Session found" : "No session");
-      if (!session) {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
         setIsLoading(false);
       }
     });
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state change detected:", event);
+        
+        if (session?.user) {
+          console.log("Session user found:", session.user.email);
+          fetchUserProfile(session.user.id);
+        } else {
+          console.log("No session user, setting user to null");
+          setUser(null);
+          setIsLoading(false);
+        }
+      }
+    );
 
     return () => {
       console.log("Cleaning up auth state listener");
@@ -76,8 +53,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  // Fetch user profile from database
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      console.log("Fetching profile for user:", userId);
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (profile) {
+        console.log("Profile found:", profile);
+        setUser({
+          id: userId,
+          email: profile.email,
+          name: profile.name || profile.email,
+          role: profile.role as UserRole,
+          points: profile.points || 0,
+          following: profile.following || [],
+          createdAt: new Date(profile.created_at),
+          updatedAt: new Date(profile.updated_at),
+          createdBy: profile.created_by,
+          lastModifiedBy: profile.last_modified_by,
+        });
+      } else {
+        console.log("No profile found for user");
+      }
+    } catch (err) {
+      console.error("Error in fetchUserProfile:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Simple sign in function
   const signIn = async (email: string, password: string) => {
-    setIsLoading(true);
     console.log("Signing in with email:", email);
     
     try {
@@ -91,26 +108,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
       
-      console.log("Sign in successful", data);
+      console.log("Sign in successful:", data);
       return data;
     } catch (error) {
-      console.error("Sign in failed", error);
+      console.error("Sign in failed:", error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  // Sign out function
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Sign out error:", error);
-        throw error;
-      }
+      if (error) throw error;
       console.log("Sign out successful");
     } catch (error) {
-      console.error("Sign out failed", error);
+      console.error("Sign out failed:", error);
       throw error;
     }
   };
