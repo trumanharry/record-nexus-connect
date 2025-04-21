@@ -22,7 +22,9 @@ const LoginForm = () => {
     
     try {
       console.log("Attempting login with:", email); // Log for debugging
-      await signIn(email, password);
+      const result = await signIn(email, password);
+      console.log("Login result:", result);
+      
       toast({
         title: "Login Successful",
         description: "Welcome back!",
