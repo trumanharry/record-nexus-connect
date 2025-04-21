@@ -1,7 +1,9 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { User, UserRole } from "../types";
+import { User } from "../types";
 import { supabase } from "@/integrations/supabase/client";
+import { signInWithEmail, signOut, fetchUserProfile } from "@/utils/authUtils";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface AuthContextType {
   user: User | null;
@@ -17,8 +19,8 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { updateUserProfile: updateProfile } = useUserProfile();
 
-  // Set up auth state listener
   useEffect(() => {
     console.log("Setting up auth state listener");
     
@@ -32,7 +34,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           // Use setTimeout to prevent potential deadlocks with Supabase auth
           setTimeout(() => {
-            fetchUserProfile(session.user.id);
+            fetchUserProfile(session.user.id).then(profile => {
+              if (profile) setUser(profile);
+              setIsLoading(false);
+            });
           }, 0);
         } else {
           console.log("No session user in auth change, setting user to null");
@@ -50,9 +55,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session?.user) {
           console.log("Session user found on initial check:", session.user.email);
-          // Use setTimeout to prevent potential deadlocks with Supabase auth
           setTimeout(() => {
-            fetchUserProfile(session.user.id);
+            fetchUserProfile(session.user.id).then(profile => {
+              if (profile) setUser(profile);
+              setIsLoading(false);
+            });
           }, 0);
         } else {
           console.log("No session user on initial check, setting user to null");
@@ -73,128 +80,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Fetch user profile from database
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      console.log("Fetching profile for user:", userId);
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        setIsLoading(false);
-        return;
-      }
-
-      if (profile) {
-        console.log("Profile found:", profile);
-        
-        // Ensure the role is properly normalized
-        let userRole: UserRole;
-        
-        if (profile.role) {
-          // Convert role string to enum value, with case-insensitive matching
-          const normalizedRole = String(profile.role).toLowerCase();
-          
-          if (normalizedRole === String(UserRole.ADMINISTRATOR).toLowerCase()) {
-            userRole = UserRole.ADMINISTRATOR;
-          } else if (normalizedRole === String(UserRole.DISTRIBUTOR).toLowerCase()) {
-            userRole = UserRole.DISTRIBUTOR;
-          } else if (normalizedRole === String(UserRole.CORPORATE).toLowerCase()) {
-            userRole = UserRole.CORPORATE;
-          } else {
-            console.warn(`Unknown role: ${profile.role}, defaulting to CORPORATE`);
-            userRole = UserRole.CORPORATE;
-          }
-        } else {
-          console.warn("No role found in profile, defaulting to CORPORATE");
-          userRole = UserRole.CORPORATE;
-        }
-        
-        setUser({
-          id: userId,
-          email: profile.email,
-          name: profile.name || profile.email,
-          role: userRole,
-          points: profile.points || 0,
-          following: profile.following || [],
-          createdAt: new Date(profile.created_at),
-          updatedAt: new Date(profile.updated_at),
-          createdBy: profile.created_by,
-          lastModifiedBy: profile.last_modified_by,
-        });
-      } else {
-        console.log("No profile found for user");
-      }
-    } catch (err) {
-      console.error("Error in fetchUserProfile:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Simple sign in function
-  const signIn = async (email: string, password: string) => {
-    console.log("Signing in with email:", email);
-    
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        console.error("Sign in error:", error);
-        throw error;
-      }
-      
-      console.log("Sign in successful:", data);
-      return data;
-    } catch (error) {
-      console.error("Sign in failed:", error);
-      throw error;
-    }
-  };
-
-  // Sign out function
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      console.log("Sign out successful");
-    } catch (error) {
-      console.error("Sign out failed:", error);
-      throw error;
-    }
-  };
-
-  // Update user profile
-  const updateUserProfile = async (data: Partial<User>) => {
+  const handleUpdateUserProfile = async (data: Partial<User>) => {
     if (!user) return;
-    
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          name: data.name,
-          role: data.role,
-          following: data.following,
-          updated_at: new Date().toISOString(),
-          last_modified_by: user.id,
-        })
-        .eq('id', user.id);
-      
-      if (error) throw error;
-      
-      // Update local state
-      setUser(prev => prev ? { ...prev, ...data } : null);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      throw error;
-    }
+    await updateProfile(user.id, data);
+    setUser(prev => prev ? { ...prev, ...data } : null);
   };
 
   return (
@@ -202,10 +91,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isLoading,
-        signIn,
+        signIn: signInWithEmail,
         signOut,
         isAuthenticated: !!user,
-        updateUserProfile,
+        updateUserProfile: handleUpdateUserProfile,
       }}
     >
       {children}
@@ -214,3 +103,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const useAuth = () => useContext(AuthContext);
+
