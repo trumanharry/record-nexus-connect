@@ -26,6 +26,10 @@ const UserMenu: React.FC = () => {
       console.log("Signing out...");
       await signOut();
       navigate("/login");
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account."
+      });
     } catch (error) {
       console.error("Error signing out:", error);
       toast({

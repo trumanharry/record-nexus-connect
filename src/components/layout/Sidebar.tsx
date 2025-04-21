@@ -20,7 +20,7 @@ interface SidebarItemProps {
   label: string;
   to: string;
   active: boolean;
-  onClick?: () => void;
+  onClick: () => void;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -32,18 +32,17 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 }) => {
   console.log(`Rendering sidebar item: ${label}, active: ${active}, path: ${to}`);
   return (
-    <Link to={to} onClick={onClick}>
-      <Button
-        variant="ghost"
-        className={cn(
-          "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
-          active && "bg-sidebar-accent font-medium"
-        )}
-      >
-        {icon}
-        <span className="ml-3">{label}</span>
-      </Button>
-    </Link>
+    <Button
+      variant="ghost"
+      className={cn(
+        "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
+        active && "bg-sidebar-accent font-medium"
+      )}
+      onClick={onClick}
+    >
+      {icon}
+      <span className="ml-3">{label}</span>
+    </Button>
   );
 };
 

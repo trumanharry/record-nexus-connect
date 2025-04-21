@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
@@ -11,10 +12,18 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === UserRole.ADMINISTRATOR;
+  const navigate = useNavigate();
+
+  // Navigation handler functions
+  const handleNavigation = (path: string) => {
+    console.log("Navigating to:", path);
+    navigate(path);
+  };
 
   return (
     <div className="space-y-8">
@@ -235,27 +244,47 @@ const Dashboard: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-            <Button className="h-20 flex flex-col gap-1 w-full" variant="outline">
+            <Button 
+              className="h-20 flex flex-col gap-1 w-full" 
+              variant="outline"
+              onClick={() => handleNavigation("/companies/add")}
+            >
               <Building className="h-5 w-5" />
               <span>Add Company</span>
             </Button>
             
-            <Button className="h-20 flex flex-col gap-1 w-full" variant="outline">
+            <Button 
+              className="h-20 flex flex-col gap-1 w-full" 
+              variant="outline"
+              onClick={() => handleNavigation("/hospitals/add")}
+            >
               <Building className="h-5 w-5" />
               <span>Add Hospital</span>
             </Button>
             
-            <Button className="h-20 flex flex-col gap-1 w-full" variant="outline">
+            <Button 
+              className="h-20 flex flex-col gap-1 w-full" 
+              variant="outline"
+              onClick={() => handleNavigation("/contacts/add")}
+            >
               <User className="h-5 w-5" />
               <span>Add Contact</span>
             </Button>
             
-            <Button className="h-20 flex flex-col gap-1 w-full" variant="outline">
+            <Button 
+              className="h-20 flex flex-col gap-1 w-full" 
+              variant="outline"
+              onClick={() => handleNavigation("/physicians/add")}
+            >
               <FileText className="h-5 w-5" />
               <span>Add Physician</span>
             </Button>
             
-            <Button className="h-20 flex flex-col gap-1 w-full" variant="outline">
+            <Button 
+              className="h-20 flex flex-col gap-1 w-full" 
+              variant="outline"
+              onClick={() => handleNavigation("/reports")}
+            >
               <LineChart className="h-5 w-5" />
               <span>View Reports</span>
             </Button>
@@ -274,22 +303,38 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-              <Button className="h-16 flex gap-2 w-full" variant="default">
+              <Button 
+                className="h-16 flex gap-2 w-full" 
+                variant="default"
+                onClick={() => handleNavigation("/settings")}
+              >
                 <Settings className="h-5 w-5" />
                 <span>System Settings</span>
               </Button>
               
-              <Button className="h-16 flex gap-2 w-full" variant="default">
+              <Button 
+                className="h-16 flex gap-2 w-full" 
+                variant="default"
+                onClick={() => handleNavigation("/settings/users")}
+              >
                 <User className="h-5 w-5" />
                 <span>User Management</span>
               </Button>
               
-              <Button className="h-16 flex gap-2 w-full" variant="default">
+              <Button 
+                className="h-16 flex gap-2 w-full" 
+                variant="default"
+                onClick={() => handleNavigation("/settings/fields")}
+              >
                 <FileText className="h-5 w-5" />
                 <span>Field Configuration</span>
               </Button>
               
-              <Button className="h-16 flex gap-2 w-full" variant="default">
+              <Button 
+                className="h-16 flex gap-2 w-full" 
+                variant="default"
+                onClick={() => handleNavigation("/settings/points")}
+              >
                 <BarChart3 className="h-5 w-5" />
                 <span>Point System</span>
               </Button>
