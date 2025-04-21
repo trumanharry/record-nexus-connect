@@ -23,8 +23,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     return <Navigate to="/login" />;
   }
 
-  if (allowedRoles && allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/unauthorized" />;
+  if (allowedRoles && allowedRoles.length > 0 && user) {
+    console.log("Checking user role:", user.role, "against allowed roles:", allowedRoles);
+    
+    // Check if user role is in the allowed roles
+    if (!allowedRoles.includes(user.role)) {
+      console.log(`User with role ${user.role} attempted to access a route restricted to: ${allowedRoles.join(', ')}`);
+      return <Navigate to="/unauthorized" />;
+    }
   }
 
   return <Outlet />;

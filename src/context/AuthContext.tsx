@@ -9,6 +9,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
+  updateUserProfile: (data: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -71,11 +72,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profile) {
         console.log("Profile found:", profile);
+        
+        // Create user object with correct role handling
+        const userRole = profile.role as UserRole;
+        
         setUser({
           id: userId,
           email: profile.email,
           name: profile.name || profile.email,
-          role: profile.role as UserRole,
+          role: userRole,
           points: profile.points || 0,
           following: profile.following || [],
           createdAt: new Date(profile.created_at),
@@ -128,6 +133,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Update user profile
+  const updateUserProfile = async (data: Partial<User>) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: data.name,
+          role: data.role,
+          following: data.following,
+          updated_at: new Date().toISOString(),
+          last_modified_by: user.id,
+        })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setUser(prev => prev ? { ...prev, ...data } : null);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -136,6 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signIn,
         signOut,
         isAuthenticated: !!user,
+        updateUserProfile,
       }}
     >
       {children}
