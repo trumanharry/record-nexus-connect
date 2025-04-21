@@ -25,33 +25,54 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     console.log("User is not authenticated, redirecting to login");
-    return <Navigate to="/login" state={{ from: location }} />;
+    // Use replace instead of push to avoid building up a history stack
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check for role-based access
+  // Check for role-based access with proper error handling
   if (allowedRoles && allowedRoles.length > 0 && user) {
-    console.log("Checking user role:", user.role, "against allowed roles:", allowedRoles);
-    console.log("User role type:", typeof user.role);
-    console.log("Allowed roles types:", allowedRoles.map(role => typeof role));
-    
-    // Check if user role is in the allowed roles
-    const hasAccess = allowedRoles.includes(user.role);
-    console.log("User has access:", hasAccess);
-    
-    if (!hasAccess) {
-      console.log(`User with role ${user.role} attempted to access a route restricted to: ${allowedRoles.join(', ')}`);
+    try {
+      console.log("Checking user role:", user.role, "against allowed roles:", allowedRoles);
       
-      // Show a toast notification about the access restriction
+      // Ensure we have a valid user role before checking
+      if (!user.role) {
+        console.error("User role is undefined");
+        toast({
+          title: "Authentication Error",
+          description: "Your user role could not be determined. Please try logging in again.",
+          variant: "destructive",
+        });
+        return <Navigate to="/login" replace />;
+      }
+      
+      // Check if user role is in the allowed roles
+      const hasAccess = allowedRoles.includes(user.role);
+      console.log("User has access:", hasAccess);
+      
+      if (!hasAccess) {
+        console.log(`User with role ${user.role} attempted to access a route restricted to: ${allowedRoles.join(', ')}`);
+        
+        toast({
+          title: "Access Denied",
+          description: `You don't have permission to access this page. Required role: ${allowedRoles.join(', ')}`,
+          variant: "destructive",
+        });
+        
+        return <Navigate to="/unauthorized" replace />;
+      }
+    } catch (error) {
+      // Handle any unexpected errors during role checking
+      console.error("Error checking user role:", error);
       toast({
-        title: "Access Denied",
-        description: `You don't have permission to access this page. Required role: ${allowedRoles.join(', ')}`,
+        title: "Error",
+        description: "An error occurred while checking permissions. Please try again.",
         variant: "destructive",
       });
-      
-      return <Navigate to="/unauthorized" />;
+      return <Navigate to="/dashboard" replace />;
     }
   }
 
+  // If all checks pass, render the child routes
   return <Outlet />;
 };
 
