@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,17 +10,27 @@ const Index = () => {
 
   // Improved handler for redirection
   useEffect(() => {
+    // Wait for auth state to be determined
+    if (isLoading) {
+      console.log("Index: Auth state is still loading");
+      return;
+    }
+
     // Only redirect after auth state is confirmed and not already redirecting
-    if (!isLoading && isAuthenticated && !redirecting) {
+    if (isAuthenticated && !redirecting) {
       console.log("Index: User is authenticated, redirecting to dashboard");
       setRedirecting(true);
       
       // Small delay to ensure stable redirect
       const redirectTimer = setTimeout(() => {
         navigate("/dashboard");
-      }, 50);
+      }, 100);
       
       return () => clearTimeout(redirectTimer);
+    }
+
+    if (!isLoading && !isAuthenticated) {
+      console.log("Index: User is not authenticated, showing landing page");
     }
   }, [isAuthenticated, isLoading, navigate, redirecting]);
 
