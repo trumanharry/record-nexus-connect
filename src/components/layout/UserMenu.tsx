@@ -18,26 +18,33 @@ const UserMenu: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
+  console.log("UserMenu rendering with user:", user);
+  
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
+    try {
+      console.log("Signing out...");
+      await signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
   
   const handleProfile = () => {
+    console.log("Navigating to profile...");
     navigate("/profile");
   };
   
   const handleSettings = () => {
+    console.log("Navigating to settings...");
     navigate("/settings");
   };
   
   if (!user) return null;
   
   const userInitials = user.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+    : user.email.charAt(0).toUpperCase();
   
   return (
     <DropdownMenu>
@@ -51,7 +58,7 @@ const UserMenu: React.FC = () => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col">
-            <span>{user.name}</span>
+            <span>{user.name || user.email}</span>
             <span className="text-xs text-muted-foreground">{user.email}</span>
             <div className="mt-1">
               <RoleDisplay role={user.role} size="sm" />

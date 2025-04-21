@@ -28,6 +28,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   to,
   active,
 }) => {
+  console.log(`Rendering sidebar item: ${label}, active: ${active}, path: ${to}`);
   return (
     <Link to={to}>
       <Button
@@ -47,7 +48,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
+  
+  console.log("Current user in sidebar:", user);
+  console.log("Current location:", location.pathname);
+  
   const isAdmin = user?.role === UserRole.ADMINISTRATOR;
+  console.log("Is user admin?", isAdmin, "Role:", user?.role, "AdminRole:", UserRole.ADMINISTRATOR);
 
   // Navigation items
   const navItems = [
@@ -56,12 +62,18 @@ const Sidebar: React.FC = () => {
     { icon: <Building size={20} />, label: "Hospitals", to: "/hospitals" },
     { icon: <User size={20} />, label: "Contacts", to: "/contacts" },
     { icon: <FileText size={20} />, label: "Physicians", to: "/physicians" },
-    { icon: <Upload size={20} />, label: "Import Data", to: "/import" },
     { icon: <Star size={20} />, label: "Points & Rankings", to: "/points" },
   ];
-
-  // Only show settings to administrators
+  
+  // Only show import data to administrators
   if (isAdmin) {
+    navItems.push({
+      icon: <Upload size={20} />,
+      label: "Import Data", 
+      to: "/import"
+    });
+    
+    // Also show settings to administrators
     navItems.push({
       icon: <Settings size={20} />,
       label: "Settings",
@@ -98,12 +110,11 @@ const Sidebar: React.FC = () => {
         <div className="flex items-center">
           <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground">
             {user?.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")}
+              ? user.name.split(" ").map((n) => n[0]).join("")
+              : user?.email?.charAt(0)}
           </div>
           <div className="ml-3">
-            <p className="font-medium text-sm">{user?.name}</p>
+            <p className="font-medium text-sm">{user?.name || user?.email}</p>
             <p className="text-xs text-sidebar-foreground/70 capitalize">
               {user?.role}
             </p>
