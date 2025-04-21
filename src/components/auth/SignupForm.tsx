@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,25 +11,17 @@ import { supabase } from "@/integrations/supabase/client";
 const SignupForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password.length < 6) {
       toast({
-        title: "Password Too Short",
+        title: "Signup Failed",
         description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      toast({
-        title: "Passwords Don't Match",
-        description: "Please make sure your passwords match.",
         variant: "destructive",
       });
       return;
@@ -45,20 +38,18 @@ const SignupForm = () => {
       if (error) throw error;
       
       toast({
-        title: "Account Created",
-        description: "Your account has been created successfully. You can now log in.",
+        title: "Signup Successful",
+        description: "Your account has been created successfully! You can now log in.",
       });
       
-      // Clear form
+      // Clear fields after successful signup
       setEmail("");
       setPassword("");
-      setConfirmPassword("");
-      
     } catch (error: any) {
       console.error("Signup failed", error);
       toast({
         title: "Signup Failed",
-        description: error.message || "Failed to create account. Please try again.",
+        description: error.message || "An error occurred during signup. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -70,9 +61,9 @@ const SignupForm = () => {
     <form onSubmit={handleSubmit}>
       <CardContent className="space-y-4 pt-4">
         <div className="space-y-2">
-          <Label htmlFor="signupEmail">Email</Label>
+          <Label htmlFor="signup-email">Email</Label>
           <Input
-            id="signupEmail"
+            id="signup-email"
             type="email"
             placeholder="you@example.com"
             value={email}
@@ -82,33 +73,23 @@ const SignupForm = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="signupPassword">Password</Label>
+          <Label htmlFor="signup-password">Password</Label>
           <Input
-            id="signupPassword"
+            id="signup-password"
             type="password"
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={6}
           />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
+          <p className="text-xs text-gray-500">Must be at least 6 characters</p>
         </div>
       </CardContent>
 
       <CardFooter>
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creating Account..." : "Create Account"}
+          {isLoading ? "Creating account..." : "Create Account"}
         </Button>
       </CardFooter>
     </form>

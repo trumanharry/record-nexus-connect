@@ -6,14 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,13 +20,19 @@ const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      await signIn(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed", error);
       toast({
         title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        description: "Invalid credentials. Please check your email and password.",
         variant: "destructive",
       });
     } finally {
