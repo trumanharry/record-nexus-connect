@@ -23,14 +23,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log("Setting up auth state listener");
     
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session ? "Session found" : "No session");
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      } else {
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initial session check:", session ? "Session found" : "No session");
+        
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
         setIsLoading(false);
       }
-    });
+    };
+    
+    initializeAuth();
     
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -39,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session?.user) {
           console.log("Session user found:", session.user.email);
-          fetchUserProfile(session.user.id);
+          await fetchUserProfile(session.user.id);
         } else {
           console.log("No session user, setting user to null");
           setUser(null);
@@ -73,8 +82,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (profile) {
         console.log("Profile found:", profile);
         
-        // Create user object with correct role handling
-        const userRole = profile.role as UserRole;
+        // Ensure the role is properly normalized
+        let userRole: UserRole;
+        
+        if (profile.role) {
+          // Convert role string to enum value, with case-insensitive matching
+          const normalizedRole = String(profile.role).toLowerCase();
+          
+          if (normalizedRole === String(UserRole.ADMINISTRATOR).toLowerCase()) {
+            userRole = UserRole.ADMINISTRATOR;
+          } else if (normalizedRole === String(UserRole.DISTRIBUTOR).toLowerCase()) {
+            userRole = UserRole.DISTRIBUTOR;
+          } else if (normalizedRole === String(UserRole.CORPORATE).toLowerCase()) {
+            userRole = UserRole.CORPORATE;
+          } else {
+            console.warn(`Unknown role: ${profile.role}, defaulting to CORPORATE`);
+            userRole = UserRole.CORPORATE;
+          }
+        } else {
+          console.warn("No role found in profile, defaulting to CORPORATE");
+          userRole = UserRole.CORPORATE;
+        }
         
         setUser({
           id: userId,

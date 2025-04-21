@@ -15,33 +15,31 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Don't do anything while still loading
     if (isLoading) return;
 
-    // Handle unauthenticated users
+    // Handle authentication
     if (!isAuthenticated) {
       navigate(redirectTo, { replace: true });
       return;
     }
-    
-    // Check role-based access if required
-    if (allowedRoles && allowedRoles.length > 0 && user) {
-      // Make sure user has a role before checking
-      if (!user.role) {
-        console.error("User role is undefined");
-        navigate("/login", { replace: true });
-        return;
-      }
-      
-      // Convert both to strings for comparison to avoid type mismatches
+
+    // Skip role check if no roles specified
+    if (!allowedRoles || allowedRoles.length === 0) return;
+
+    // Handle role-based access
+    if (user && user.role) {
+      const userRoleString = String(user.role).toLowerCase();
       const hasAccess = allowedRoles.some(role => 
-        String(role).toLowerCase() === String(user.role).toLowerCase()
+        String(role).toLowerCase() === userRoleString
       );
-      
+
       if (!hasAccess) {
-        console.error(`User with role ${user.role} doesn't have the required role to access this page. Allowed roles: ${allowedRoles.join(", ")}`);
+        console.log(`Access denied: user role ${user.role} not in allowed roles: ${allowedRoles.join(', ')}`);
         navigate("/unauthorized", { replace: true });
       }
+    } else {
+      console.error("User role is undefined");
+      navigate("/login", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, redirectTo, allowedRoles, user]);
 
