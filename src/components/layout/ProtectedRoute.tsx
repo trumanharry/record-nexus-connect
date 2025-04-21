@@ -25,11 +25,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     console.log("User is not authenticated, redirecting to login");
-    // Use replace instead of push to avoid building up a history stack
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check for role-based access with proper error handling
+  // Check for role-based access
   if (allowedRoles && allowedRoles.length > 0 && user) {
     try {
       console.log("Checking user role:", user.role, "against allowed roles:", allowedRoles);

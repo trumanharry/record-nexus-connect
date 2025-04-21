@@ -15,16 +15,18 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Don't do anything while still loading
     if (isLoading) return;
 
+    // Handle unauthenticated users
     if (!isAuthenticated) {
       navigate(redirectTo, { replace: true });
-    } else if (
-      allowedRoles &&
-      allowedRoles.length > 0 &&
-      user
-    ) {
-      // Check if user has a role
+      return;
+    }
+    
+    // Check role-based access if required
+    if (allowedRoles && allowedRoles.length > 0 && user) {
+      // Make sure user has a role before checking
       if (!user.role) {
         console.error("User role is undefined");
         navigate("/login", { replace: true });
@@ -37,7 +39,6 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}) => {
       );
       
       if (!hasAccess) {
-        // User is authenticated but doesn't have the required role
         console.error(`User with role ${user.role} doesn't have the required role to access this page. Allowed roles: ${allowedRoles.join(", ")}`);
         navigate("/unauthorized", { replace: true });
       }
