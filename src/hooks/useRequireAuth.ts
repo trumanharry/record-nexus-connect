@@ -18,16 +18,29 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}) => {
     if (isLoading) return;
 
     if (!isAuthenticated) {
-      navigate(redirectTo);
+      navigate(redirectTo, { replace: true });
     } else if (
       allowedRoles &&
       allowedRoles.length > 0 &&
-      user &&
-      !allowedRoles.includes(user.role)
+      user
     ) {
-      // User is authenticated but doesn't have the required role
-      navigate("/unauthorized");
-      console.error("User doesn't have the required role to access this page");
+      // Check if user has a role
+      if (!user.role) {
+        console.error("User role is undefined");
+        navigate("/login", { replace: true });
+        return;
+      }
+      
+      // Convert both to strings for comparison to avoid type mismatches
+      const hasAccess = allowedRoles.some(role => 
+        String(role).toLowerCase() === String(user.role).toLowerCase()
+      );
+      
+      if (!hasAccess) {
+        // User is authenticated but doesn't have the required role
+        console.error(`User with role ${user.role} doesn't have the required role to access this page. Allowed roles: ${allowedRoles.join(", ")}`);
+        navigate("/unauthorized", { replace: true });
+      }
     }
   }, [isAuthenticated, isLoading, navigate, redirectTo, allowedRoles, user]);
 

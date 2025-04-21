@@ -46,7 +46,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
       }
       
       // Check if user role is in the allowed roles
-      const hasAccess = allowedRoles.includes(user.role);
+      // Convert both to strings for comparison to avoid type mismatches
+      const hasAccess = allowedRoles.some(role => 
+        String(role).toLowerCase() === String(user.role).toLowerCase()
+      );
+      
       console.log("User has access:", hasAccess);
       
       if (!hasAccess) {
