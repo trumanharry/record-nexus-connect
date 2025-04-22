@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -31,19 +30,20 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   onClick,
 }) => {
   return (
-    <Link to={to} className="w-full block">
-      <Button
-        variant="ghost"
-        className={cn(
-          "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
-          active && "bg-sidebar-accent font-medium"
-        )}
-        onClick={onClick}
-        type="button"
-      >
-        {icon}
-        <span className="ml-3">{label}</span>
-      </Button>
+    <Link
+      to={to}
+      onClick={onClick}
+      className={cn(
+        "flex items-center w-full px-3 py-3 mb-1",
+        "text-[#E4E4E7] hover:text-white",
+        "rounded-md transition-all duration-200",
+        active
+          ? "bg-brand-700 text-white font-medium"
+          : "hover:bg-brand-700/50"
+      )}
+    >
+      <span className="inline-flex shrink-0 mr-3">{icon}</span>
+      <span className="truncate">{label}</span>
     </Link>
   );
 };
@@ -74,52 +74,43 @@ const Sidebar: React.FC = () => {
   ];
   
   if (isAdmin) {
-    navItems.push({
-      icon: <Upload size={20} />,
-      label: "Import Data", 
-      to: "/import"
-    });
-    
-    navItems.push({
-      icon: <Settings size={20} />,
-      label: "Settings",
-      to: "/settings",
-    });
+    navItems.push(
+      { icon: <Upload size={20} />, label: "Import Data", to: "/import" },
+      { icon: <Settings size={20} />, label: "Settings", to: "/settings" }
+    );
   }
 
   return (
-    <div className="w-64 bg-sidebar-background text-sidebar-foreground flex flex-col">
-      <div className="p-6 flex items-center justify-center">
-        <h2 className="text-xl font-bold text-sidebar-primary-foreground">
+    <div className="w-64 min-h-screen bg-brand-800 text-white flex flex-col">
+      <div className="p-6 flex items-center justify-center border-b border-brand-700">
+        <h2 className="text-xl font-bold text-white">
           RecordNexus
         </h2>
       </div>
 
-      <nav className="flex-1 overflow-y-auto">
-        <div className="px-3 py-2">
-          {navItems.map((item) => (
-            <SidebarItem
-              key={item.to}
-              icon={item.icon}
-              label={item.label}
-              to={item.to}
-              active={location.pathname === item.to}
-              onClick={() => handleNavigation(item.to)}
-            />
-          ))}
-        </div>
+      <nav className="flex-1 overflow-y-auto p-3">
+        {navItems.map((item) => (
+          <SidebarItem
+            key={item.to}
+            icon={item.icon}
+            label={item.label}
+            to={item.to}
+            active={location.pathname === item.to}
+            onClick={() => handleNavigation(item.to)}
+          />
+        ))}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-brand-700">
         <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground">
+          <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white">
             {user?.name
               ? user.name.split(" ").map((n) => n[0]).join("")
               : user?.email?.charAt(0)}
           </div>
           <div className="ml-3">
-            <p className="font-medium text-sm">{user?.name || user?.email}</p>
-            <p className="text-xs text-sidebar-foreground/70 capitalize">
+            <p className="font-medium text-sm text-white">{user?.name || user?.email}</p>
+            <p className="text-xs text-brand-300 capitalize">
               {user?.role}
             </p>
           </div>
