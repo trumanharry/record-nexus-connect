@@ -39,7 +39,10 @@ const LoginForm = () => {
         description: "Welcome back!",
       });
       
-      navigate("/dashboard");
+      // Use a setTimeout to ensure the navigation happens after the toast
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 100);
     } catch (error: any) {
       console.error("Login error:", error);
       
