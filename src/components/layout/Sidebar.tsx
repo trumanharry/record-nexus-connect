@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -33,7 +34,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     <Button
       variant="ghost"
       className={cn(
-        "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent opacity-100",
+        "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
         active && "bg-sidebar-accent font-medium"
       )}
       onClick={onClick}
