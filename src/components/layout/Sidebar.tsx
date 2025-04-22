@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -30,12 +29,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   active,
   onClick,
 }) => {
-  console.log(`Rendering sidebar item: ${label}, active: ${active}, path: ${to}`);
   return (
     <Button
       variant="ghost"
       className={cn(
-        "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
+        "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent opacity-100",
         active && "bg-sidebar-accent font-medium"
       )}
       onClick={onClick}
@@ -57,13 +55,11 @@ const Sidebar: React.FC = () => {
   const isAdmin = user?.role === UserRole.ADMINISTRATOR;
   console.log("Is user admin?", isAdmin, "Role:", user?.role, "AdminRole:", UserRole.ADMINISTRATOR);
 
-  // Navigation handler
   const handleNavigation = (path: string) => {
     console.log("Navigating to:", path);
     navigate(path);
   };
 
-  // Navigation items
   const navItems = [
     { icon: <BarChart3 size={20} />, label: "Dashboard", to: "/dashboard" },
     { icon: <Building size={20} />, label: "Companies", to: "/companies" },
@@ -73,7 +69,6 @@ const Sidebar: React.FC = () => {
     { icon: <Star size={20} />, label: "Points & Rankings", to: "/points" },
   ];
   
-  // Only show import data to administrators
   if (isAdmin) {
     navItems.push({
       icon: <Upload size={20} />,
@@ -81,7 +76,6 @@ const Sidebar: React.FC = () => {
       to: "/import"
     });
     
-    // Also show settings to administrators
     navItems.push({
       icon: <Settings size={20} />,
       label: "Settings",
@@ -91,14 +85,12 @@ const Sidebar: React.FC = () => {
 
   return (
     <div className="w-64 bg-sidebar-background text-sidebar-foreground flex flex-col">
-      {/* Sidebar header */}
       <div className="p-6 flex items-center justify-center">
         <h2 className="text-xl font-bold text-sidebar-primary-foreground">
           RecordNexus
         </h2>
       </div>
 
-      {/* Navigation links */}
       <nav className="flex-1 overflow-y-auto">
         <div className="px-3 py-2">
           {navItems.map((item) => (
@@ -114,7 +106,6 @@ const Sidebar: React.FC = () => {
         </div>
       </nav>
 
-      {/* User info at bottom */}
       <div className="p-4 border-t border-sidebar-border">
         <div className="flex items-center">
           <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground">
