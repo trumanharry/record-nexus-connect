@@ -31,17 +31,20 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   onClick,
 }) => {
   return (
-    <Button
-      variant="ghost"
-      className={cn(
-        "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
-        active && "bg-sidebar-accent font-medium"
-      )}
-      onClick={onClick}
-    >
-      {icon}
-      <span className="ml-3">{label}</span>
-    </Button>
+    <Link to={to} className="w-full block">
+      <Button
+        variant="ghost"
+        className={cn(
+          "w-full justify-start px-3 py-6 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
+          active && "bg-sidebar-accent font-medium"
+        )}
+        onClick={onClick}
+        type="button"
+      >
+        {icon}
+        <span className="ml-3">{label}</span>
+      </Button>
+    </Link>
   );
 };
 
@@ -58,7 +61,7 @@ const Sidebar: React.FC = () => {
 
   const handleNavigation = (path: string) => {
     console.log("Navigating to:", path);
-    navigate(path);
+    // We'll let the Link component handle navigation instead
   };
 
   const navItems = [
